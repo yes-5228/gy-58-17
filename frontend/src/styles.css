@@ -413,7 +413,7 @@ select {
 
 .rule-card {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: auto 1fr auto auto;
   gap: 10px;
   align-items: center;
   padding: 10px 12px;
@@ -480,6 +480,43 @@ select {
 .matched-badge {
   background: #f5b041;
   color: #62401f;
+}
+
+.idle-badge {
+  background: #f0f0f0;
+  color: #999;
+}
+
+.rule-priority-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 28px;
+}
+
+.priority-num {
+  font-size: 12px;
+  font-weight: 800;
+  color: #475852;
+}
+
+.icon-btn.tiny {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  padding: 0;
+  border: 1px solid #d4dfd9;
+  background: #fff;
+  color: #475852;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn.tiny:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
 .hint-badge {

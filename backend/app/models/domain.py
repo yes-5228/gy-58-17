@@ -23,6 +23,7 @@ class PricingRule(BaseModel):
     price: float
     time_labels: list[str] = []
     court_ids: list[int] = []
+    priority: int = 0
     active: bool = True
 
 

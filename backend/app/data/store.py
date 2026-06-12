@@ -74,6 +74,7 @@ class InMemoryStore:
                 price=150.0,
                 time_labels=[],
                 court_ids=[],
+                priority=0,
                 active=True,
             ),
             2: PricingRule(
@@ -83,6 +84,7 @@ class InMemoryStore:
                 price=100.0,
                 time_labels=["19:00-21:00"],
                 court_ids=[],
+                priority=0,
                 active=True,
             ),
             3: PricingRule(
@@ -92,6 +94,7 @@ class InMemoryStore:
                 price=180.0,
                 time_labels=["19:00-21:00"],
                 court_ids=[4],
+                priority=1,
                 active=True,
             ),
         }

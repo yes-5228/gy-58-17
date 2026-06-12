@@ -6,7 +6,8 @@ from app.schemas import PricingRuleCreate, PricingRuleUpdate
 
 
 def list_pricing_rules() -> list[PricingRule]:
-    return list(store.pricing_rules.values())
+    rules = list(store.pricing_rules.values())
+    return sorted(rules, key=lambda r: (r.priority, -r.id), reverse=True)
 
 
 def create_pricing_rule(payload: PricingRuleCreate) -> PricingRule:
@@ -63,9 +64,9 @@ def compute_activity_price(slot: TimeSlot) -> tuple[float | None, int | None]:
             score += 2
         if rule.time_labels:
             score += 1
-        candidates.append((score, -rule.id, rule))
+        candidates.append((score, rule.priority, -rule.id, rule))
     if not candidates:
         return None, None
     candidates.sort(reverse=True)
-    matched = candidates[0][2]
+    matched = candidates[0][3]
     return matched.price, matched.id

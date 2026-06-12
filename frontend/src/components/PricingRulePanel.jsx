@@ -1,4 +1,4 @@
-import { Check, Plus, Tag, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, Plus, Sparkles, Tag, Trash2 } from 'lucide-react'
 
 const ruleTypeLabel = { holiday: '节假日', evening: '晚场' }
 
@@ -12,10 +12,27 @@ function ruleMatchesSlot(rule, slot, holidays) {
   return true
 }
 
+function computeRuleDayStatus(rules, slots, holidays) {
+  const appliedSet = new Set()
+  const matchedSet = new Set()
+  for (const slot of slots) {
+    for (const rule of rules) {
+      if (ruleMatchesSlot(rule, slot, holidays)) {
+        matchedSet.add(rule.id)
+        if (slot.matched_rule_id === rule.id) {
+          appliedSet.add(rule.id)
+        }
+      }
+    }
+  }
+  return { appliedSet, matchedSet }
+}
+
 export function PricingRulePanel({
   rules,
   holidays,
   courts,
+  slots,
   selectedSlot,
   newRule,
   newHoliday,
@@ -24,6 +41,7 @@ export function PricingRulePanel({
   onAddRule,
   onToggleRule,
   onDeleteRule,
+  onMoveRule,
   onAddHoliday,
   onRemoveHoliday,
 }) {
@@ -44,6 +62,37 @@ export function PricingRulePanel({
     onNewRuleChange({ ...newRule, court_ids: next.join(',') })
   }
 
+  const { appliedSet, matchedSet } = computeRuleDayStatus(rules, slots, holidays)
+
+  function getRuleClasses(rule) {
+    const classes = ['rule-card']
+    if (!rule.active) classes.push('inactive')
+    const isApplied = appliedSet.has(rule.id)
+    const isMatched = matchedSet.has(rule.id)
+    if (isApplied) classes.push('applied')
+    else if (isMatched) classes.push('matched')
+    return classes
+  }
+
+  function getRuleBadge(rule) {
+    if (!rule.active) return null
+    if (appliedSet.has(rule.id)) {
+      return (
+        <span className="rule-badge applied-badge">
+          <Sparkles size={10} /> 生效中
+        </span>
+      )
+    }
+    if (matchedSet.has(rule.id)) {
+      return (
+        <span className="rule-badge matched-badge">
+          <Check size={10} /> 匹配
+        </span>
+      )
+    }
+    return <span className="rule-badge idle-badge">未匹配</span>
+  }
+
   return (
     <section className="panel pricing-panel">
       <div className="section-title">
@@ -51,64 +100,68 @@ export function PricingRulePanel({
         <h2>活动价规则</h2>
         {selectedSlot && (
           <span className="hint-badge">
-            <Sparkles size={12} /> 已选中时段: {selectedSlot.label}
+            <Sparkles size={12} /> 已选中: {selectedSlot.label}
           </span>
         )}
       </div>
 
       <div className="pricing-body">
         <div className="pricing-section">
-          <h3 className="pricing-subtitle">定价规则</h3>
+          <h3 className="pricing-subtitle">定价规则 <span className="muted-text">(越高越优先)</span></h3>
           <div className="rule-list">
-            {rules.map((rule) => {
-              const isMatch = ruleMatchesSlot(rule, selectedSlot, holidays)
-              const isActive = selectedSlot?.matched_rule_id === rule.id
-              const classes = ['rule-card']
-              if (!rule.active) classes.push('inactive')
-              if (isMatch) classes.push('matched')
-              if (isActive) classes.push('applied')
-              return (
-                <div className={classes.join(' ')} key={rule.id}>
-                  <div className="rule-info">
-                    <span className="rule-name">{rule.name}</span>
-                    <span className="rule-tag">{ruleTypeLabel[rule.rule_type]}</span>
-                    {rule.time_labels.length > 0 && (
-                      <span className="rule-detail">{rule.time_labels.join(', ')}</span>
-                    )}
-                    {rule.court_ids.length > 0 && (
-                      <span className="rule-detail">
-                        限定场地: {rule.court_ids.map((id) => courtsById[id]?.name || `#${id}`).join(', ')}
-                      </span>
-                    )}
-                    {isActive && (
-                      <span className="rule-badge applied-badge">
-                        <Sparkles size={10} /> 当前生效
-                      </span>
-                    )}
-                    {isMatch && !isActive && (
-                      <span className="rule-badge matched-badge">
-                        <Check size={10} /> 匹配
-                      </span>
-                    )}
-                  </div>
-                  <div className="rule-price">
-                    <span>¥{rule.price}</span>
-                  </div>
-                  <div className="rule-actions">
-                    <button
-                      type="button"
-                      className={`toggle-btn ${rule.active ? 'active' : ''}`}
-                      onClick={() => onToggleRule(rule)}
-                    >
-                      {rule.active ? '启用' : '停用'}
-                    </button>
-                    <button type="button" className="icon-btn danger" onClick={() => onDeleteRule(rule.id)}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+            {rules.map((rule, index) => (
+              <div className={getRuleClasses(rule).join(' ')} key={rule.id}>
+                <div className="rule-priority-col">
+                  <button
+                    type="button"
+                    className="icon-btn tiny"
+                    disabled={index === 0}
+                    onClick={() => onMoveRule(rule.id, 'up')}
+                    title="提高优先级"
+                  >
+                    <ArrowUp size={12} />
+                  </button>
+                  <span className="priority-num">{rule.priority}</span>
+                  <button
+                    type="button"
+                    className="icon-btn tiny"
+                    disabled={index === rules.length - 1}
+                    onClick={() => onMoveRule(rule.id, 'down')}
+                    title="降低优先级"
+                  >
+                    <ArrowDown size={12} />
+                  </button>
                 </div>
-              )
-            })}
+                <div className="rule-info">
+                  <span className="rule-name">{rule.name}</span>
+                  <span className="rule-tag">{ruleTypeLabel[rule.rule_type]}</span>
+                  {rule.time_labels.length > 0 && (
+                    <span className="rule-detail">{rule.time_labels.join(', ')}</span>
+                  )}
+                  {rule.court_ids.length > 0 && (
+                    <span className="rule-detail">
+                      限定场地: {rule.court_ids.map((id) => courtsById[id]?.name || `#${id}`).join(', ')}
+                    </span>
+                  )}
+                  {getRuleBadge(rule)}
+                </div>
+                <div className="rule-price">
+                  <span>¥{rule.price}</span>
+                </div>
+                <div className="rule-actions">
+                  <button
+                    type="button"
+                    className={`toggle-btn ${rule.active ? 'active' : ''}`}
+                    onClick={() => onToggleRule(rule)}
+                  >
+                    {rule.active ? '启用' : '停用'}
+                  </button>
+                  <button type="button" className="icon-btn danger" onClick={() => onDeleteRule(rule.id)}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
 
           <form className="rule-form" onSubmit={onAddRule}>

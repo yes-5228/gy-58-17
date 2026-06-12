@@ -31,6 +31,7 @@ class PricingRuleCreate(BaseModel):
     price: float = Field(gt=0)
     time_labels: list[str] = Field(default_factory=list)
     court_ids: list[int] = Field(default_factory=list)
+    priority: int = 0
     active: bool = True
 
 
@@ -39,6 +40,7 @@ class PricingRuleUpdate(BaseModel):
     price: float | None = Field(default=None, gt=0)
     time_labels: list[str] | None = None
     court_ids: list[int] | None = None
+    priority: int | None = None
     active: bool | None = None
 
 

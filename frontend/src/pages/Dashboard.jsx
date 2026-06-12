@@ -154,6 +154,18 @@ export function Dashboard() {
     }
   }
 
+  async function handleMoveRule(ruleId, direction) {
+    const rule = pricingRules.find((r) => r.id === ruleId)
+    if (!rule) return
+    const delta = direction === 'up' ? 1 : -1
+    try {
+      await api.updatePricingRule(ruleId, { priority: rule.priority + delta })
+      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+    } catch (error) {
+      setMessage(error.message)
+    }
+  }
+
   async function handleAddHoliday(event) {
     event.preventDefault()
     if (!newHoliday) return
@@ -193,6 +205,7 @@ export function Dashboard() {
             rules={pricingRules}
             holidays={holidays}
             courts={courts}
+            slots={slots}
             selectedSlot={selectedSlot}
             newRule={newRule}
             newHoliday={newHoliday}
@@ -201,6 +214,7 @@ export function Dashboard() {
             onAddRule={handleAddRule}
             onToggleRule={handleToggleRule}
             onDeleteRule={handleDeleteRule}
+            onMoveRule={handleMoveRule}
             onAddHoliday={handleAddHoliday}
             onRemoveHoliday={handleRemoveHoliday}
           />
