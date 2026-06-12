@@ -425,6 +425,17 @@ select {
   opacity: 0.55;
 }
 
+.rule-card.matched {
+  border-color: #f5b041;
+  background: #fef9e7;
+}
+
+.rule-card.applied {
+  border-color: #0f6f58;
+  background: #eafaf3;
+  box-shadow: 0 0 0 1px #0f6f58;
+}
+
 .rule-info {
   display: flex;
   gap: 6px;
@@ -449,6 +460,39 @@ select {
 .rule-detail {
   color: #71817b;
   font-size: 11px;
+}
+
+.rule-badge {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.applied-badge {
+  background: #0f6f58;
+  color: #fff;
+}
+
+.matched-badge {
+  background: #f5b041;
+  color: #62401f;
+}
+
+.hint-badge {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #eafaf3;
+  color: #0f6f58;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .rule-price {

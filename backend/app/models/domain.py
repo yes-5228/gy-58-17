@@ -33,6 +33,7 @@ class TimeSlot(BaseModel):
     label: str
     price: float
     activity_price: float | None = None
+    matched_rule_id: int | None = None
     status: str = "available"
 
 

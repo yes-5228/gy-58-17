@@ -24,9 +24,9 @@ def create_booking(payload: BookingCreate) -> Booking:
     if not member:
         raise HTTPException(status_code=404, detail="会员不存在")
 
-    ap = compute_activity_price(slot)
+    ap, mrid = compute_activity_price(slot)
     if ap is not None:
-        slot = slot.model_copy(update={"activity_price": ap})
+        slot = slot.model_copy(update={"activity_price": ap, "matched_rule_id": mrid})
 
     original, discount, payable = calculate_payable(slot, member)
     booking_id = store.next_booking_id()

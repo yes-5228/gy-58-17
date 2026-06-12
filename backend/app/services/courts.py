@@ -25,9 +25,9 @@ def list_time_slots(date: str | None = None, court_id: int | None = None) -> lis
         slots = [slot for slot in slots if slot.court_id == court_id]
     result = []
     for slot in sorted(slots, key=lambda s: (s.date, s.court_id, s.label)):
-        ap = compute_activity_price(slot)
+        ap, mrid = compute_activity_price(slot)
         if ap is not None:
-            slot = slot.model_copy(update={"activity_price": ap})
+            slot = slot.model_copy(update={"activity_price": ap, "matched_rule_id": mrid})
         result.append(slot)
     return result
 

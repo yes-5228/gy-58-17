@@ -193,6 +193,7 @@ export function Dashboard() {
             rules={pricingRules}
             holidays={holidays}
             courts={courts}
+            selectedSlot={selectedSlot}
             newRule={newRule}
             newHoliday={newHoliday}
             onNewRuleChange={setNewRule}
