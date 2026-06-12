@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from app.models.domain import Booking, Court, Member, TimeSlot
+from app.models.domain import Booking, Court, Member, PricingRule, TimeSlot
 
 
 class InMemoryStore:
@@ -11,8 +11,11 @@ class InMemoryStore:
         self.members: dict[int, Member] = {}
         self.time_slots: dict[int, TimeSlot] = {}
         self.bookings: dict[int, Booking] = {}
+        self.pricing_rules: dict[int, PricingRule] = {}
+        self.holiday_dates: set[str] = set()
         self._next_slot_id = 1
         self._next_booking_id = 1
+        self._next_rule_id = 1
         self._seed()
 
     def next_booking_id(self) -> int:
@@ -24,6 +27,11 @@ class InMemoryStore:
         slot_id = self._next_slot_id
         self._next_slot_id += 1
         return slot_id
+
+    def next_rule_id(self) -> int:
+        rule_id = self._next_rule_id
+        self._next_rule_id += 1
+        return rule_id
 
     def _seed(self) -> None:
         self.courts = {
@@ -57,6 +65,28 @@ class InMemoryStore:
                         price=price,
                         status="available",
                     )
+
+        self.pricing_rules = {
+            1: PricingRule(
+                id=1,
+                name="节假日活动价",
+                rule_type="holiday",
+                price=150.0,
+                time_labels=[],
+                court_ids=[],
+                active=True,
+            ),
+            2: PricingRule(
+                id=2,
+                name="晚场活动价",
+                rule_type="evening",
+                price=100.0,
+                time_labels=["19:00-21:00"],
+                court_ids=[],
+                active=True,
+            ),
+        }
+        self._next_rule_id = 3
 
 
 store = InMemoryStore()

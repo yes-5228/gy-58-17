@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from app.data.store import store
 from app.models.domain import Booking
 from app.schemas import BookingCreate
+from app.services.pricing import compute_activity_price
 from app.services.settlement import calculate_payable
 
 
@@ -22,6 +23,10 @@ def create_booking(payload: BookingCreate) -> Booking:
     member = store.members.get(payload.member_id)
     if not member:
         raise HTTPException(status_code=404, detail="会员不存在")
+
+    ap = compute_activity_price(slot)
+    if ap is not None:
+        slot = slot.model_copy(update={"activity_price": ap})
 
     original, discount, payable = calculate_payable(slot, member)
     booking_id = store.next_booking_id()

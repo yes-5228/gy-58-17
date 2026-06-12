@@ -41,7 +41,11 @@ export function CourtSchedule({ courts, slots, selectedSlotId, onSelectSlot, onT
                       <span className="slot-time">{slot.label}</span>
                       <span className="slot-meta">
                         <Icon size={15} />
-                        {statusLabel[slot.status]} · ¥{slot.price}
+                        {statusLabel[slot.status]} · {slot.activity_price != null ? (
+                          <><span className="price-original">¥{slot.price}</span><span className="price-activity">¥{slot.activity_price}</span></>
+                        ) : (
+                          <span>¥{slot.price}</span>
+                        )}
                       </span>
                       {slot.status === 'booked' ? (
                         <span className="slot-admin muted">已锁定</span>

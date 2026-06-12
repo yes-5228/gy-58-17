@@ -2,7 +2,8 @@ import { CreditCard } from 'lucide-react'
 
 export function BookingForm({ members, selectedSlot, contactName, memberId, onContactName, onMemberId, onSubmit }) {
   const member = members.find((item) => item.id === Number(memberId))
-  const amount = selectedSlot && member ? (selectedSlot.price * member.discount_rate).toFixed(2) : '0.00'
+  const effectivePrice = selectedSlot ? (selectedSlot.activity_price ?? selectedSlot.price) : 0
+  const amount = selectedSlot && member ? (effectivePrice * member.discount_rate).toFixed(2) : '0.00'
 
   return (
     <section className="panel booking-panel">
@@ -28,6 +29,14 @@ export function BookingForm({ members, selectedSlot, contactName, memberId, onCo
         <div className="settlement-box">
           <span>当前时段</span>
           <strong>{selectedSlot ? selectedSlot.label : '请选择可预约时段'}</strong>
+          {selectedSlot && selectedSlot.activity_price != null && (
+            <>
+              <span>原价</span>
+              <strong className="price-original">¥{selectedSlot.price}</strong>
+              <span>活动价</span>
+              <strong className="price-activity">¥{selectedSlot.activity_price}</strong>
+            </>
+          )}
           <span>应付金额</span>
           <strong>¥{amount}</strong>
         </div>

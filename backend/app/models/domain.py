@@ -16,12 +16,23 @@ class Member(BaseModel):
     phone: str = ""
 
 
+class PricingRule(BaseModel):
+    id: int
+    name: str
+    rule_type: str = "holiday"
+    price: float
+    time_labels: list[str] = []
+    court_ids: list[int] = []
+    active: bool = True
+
+
 class TimeSlot(BaseModel):
     id: int
     court_id: int
     date: str
     label: str
     price: float
+    activity_price: float | None = None
     status: str = "available"
 
 

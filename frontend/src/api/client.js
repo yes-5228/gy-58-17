@@ -40,4 +40,29 @@ export const api = {
     request(`/bookings/${bookingId}/cancel`, {
       method: 'POST',
     }),
+  getPricingRules: () => request('/pricing-rules'),
+  createPricingRule: (payload) =>
+    request('/pricing-rules', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  updatePricingRule: (ruleId, payload) =>
+    request(`/pricing-rules/${ruleId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+  deletePricingRule: (ruleId) =>
+    request(`/pricing-rules/${ruleId}`, {
+      method: 'DELETE',
+    }),
+  getHolidays: () => request('/holidays'),
+  addHoliday: (date) =>
+    request('/holidays', {
+      method: 'POST',
+      body: JSON.stringify({ date }),
+    }),
+  removeHoliday: (date) =>
+    request(`/holidays/${date}`, {
+      method: 'DELETE',
+    }),
 }

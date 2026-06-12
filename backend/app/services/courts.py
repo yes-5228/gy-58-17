@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from app.data.store import store
 from app.models.domain import Court, TimeSlot
 from app.schemas import CourtCreate, TimeSlotCreate, TimeSlotUpdate
+from app.services.pricing import compute_activity_price
 
 
 def list_courts() -> list[Court]:
@@ -22,7 +23,13 @@ def list_time_slots(date: str | None = None, court_id: int | None = None) -> lis
         slots = [slot for slot in slots if slot.date == date]
     if court_id:
         slots = [slot for slot in slots if slot.court_id == court_id]
-    return sorted(slots, key=lambda slot: (slot.date, slot.court_id, slot.label))
+    result = []
+    for slot in sorted(slots, key=lambda s: (s.date, s.court_id, s.label)):
+        ap = compute_activity_price(slot)
+        if ap is not None:
+            slot = slot.model_copy(update={"activity_price": ap})
+        result.append(slot)
+    return result
 
 
 def create_time_slot(payload: TimeSlotCreate) -> TimeSlot:

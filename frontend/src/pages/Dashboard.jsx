@@ -5,13 +5,20 @@ import { BookingList } from '../components/BookingList.jsx'
 import { CourtSchedule } from '../components/CourtSchedule.jsx'
 import { DateTabs } from '../components/DateTabs.jsx'
 import { Header } from '../components/Header.jsx'
+import { PricingRulePanel } from '../components/PricingRulePanel.jsx'
 import { todayISO } from '../utils/date.js'
+
+const EMPTY_RULE = { name: '', rule_type: 'holiday', price: '', time_labels: '' }
 
 export function Dashboard() {
   const [courts, setCourts] = useState([])
   const [members, setMembers] = useState([])
   const [slots, setSlots] = useState([])
   const [bookings, setBookings] = useState([])
+  const [pricingRules, setPricingRules] = useState([])
+  const [holidays, setHolidays] = useState([])
+  const [newRule, setNewRule] = useState({ ...EMPTY_RULE })
+  const [newHoliday, setNewHoliday] = useState('')
   const [selectedDate, setSelectedDate] = useState(todayISO())
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [contactName, setContactName] = useState('')
@@ -29,6 +36,15 @@ export function Dashboard() {
     setBookings(bookingData)
   }
 
+  async function loadPricingData() {
+    const [ruleData, holidayData] = await Promise.all([
+      api.getPricingRules(),
+      api.getHolidays(),
+    ])
+    setPricingRules(ruleData)
+    setHolidays(holidayData)
+  }
+
   async function loadSlots(date) {
     const slotData = await api.getTimeSlots(date)
     setSlots(slotData)
@@ -36,7 +52,7 @@ export function Dashboard() {
   }
 
   useEffect(() => {
-    loadBaseData().catch((error) => setMessage(error.message))
+    Promise.all([loadBaseData(), loadPricingData()]).catch((error) => setMessage(error.message))
   }, [])
 
   useEffect(() => {
@@ -98,6 +114,64 @@ export function Dashboard() {
     await refresh()
   }
 
+  async function handleAddRule(event) {
+    event.preventDefault()
+    try {
+      const payload = {
+        name: newRule.name,
+        rule_type: newRule.rule_type,
+        price: Number(newRule.price),
+        time_labels: newRule.rule_type === 'evening' && newRule.time_labels
+          ? newRule.time_labels.split(',').map((s) => s.trim())
+          : [],
+      }
+      await api.createPricingRule(payload)
+      setNewRule({ ...EMPTY_RULE })
+      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+    } catch (error) {
+      setMessage(error.message)
+    }
+  }
+
+  async function handleToggleRule(rule) {
+    try {
+      await api.updatePricingRule(rule.id, { active: !rule.active })
+      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+    } catch (error) {
+      setMessage(error.message)
+    }
+  }
+
+  async function handleDeleteRule(ruleId) {
+    try {
+      await api.deletePricingRule(ruleId)
+      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+    } catch (error) {
+      setMessage(error.message)
+    }
+  }
+
+  async function handleAddHoliday(event) {
+    event.preventDefault()
+    if (!newHoliday) return
+    try {
+      await api.addHoliday(newHoliday)
+      setNewHoliday('')
+      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+    } catch (error) {
+      setMessage(error.message)
+    }
+  }
+
+  async function handleRemoveHoliday(date) {
+    try {
+      await api.removeHoliday(date)
+      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+    } catch (error) {
+      setMessage(error.message)
+    }
+  }
+
   return (
     <main className="app-shell">
       <Header stats={stats} />
@@ -112,6 +186,19 @@ export function Dashboard() {
           onToggleBlock={handleToggleBlock}
         />
         <div className="side-stack">
+          <PricingRulePanel
+            rules={pricingRules}
+            holidays={holidays}
+            newRule={newRule}
+            newHoliday={newHoliday}
+            onNewRuleChange={setNewRule}
+            onNewHolidayChange={setNewHoliday}
+            onAddRule={handleAddRule}
+            onToggleRule={handleToggleRule}
+            onDeleteRule={handleDeleteRule}
+            onAddHoliday={handleAddHoliday}
+            onRemoveHoliday={handleRemoveHoliday}
+          />
           <BookingForm
             members={members}
             selectedSlot={selectedSlot}
