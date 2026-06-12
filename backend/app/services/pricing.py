@@ -47,16 +47,26 @@ def remove_holiday_date(date: str) -> list[str]:
 
 
 def compute_activity_price(slot: TimeSlot) -> float | None:
-    matched: PricingRule | None = None
+    candidates = []
+    is_holiday = slot.date in store.holiday_dates
     for rule in store.pricing_rules.values():
         if not rule.active:
             continue
         if rule.court_ids and slot.court_id not in rule.court_ids:
             continue
-        if rule.rule_type == "holiday" and slot.date in store.holiday_dates:
-            if not rule.time_labels or slot.label in rule.time_labels:
-                matched = rule
-        elif rule.rule_type == "evening" and slot.label in rule.time_labels:
-            if slot.date not in store.holiday_dates:
-                matched = rule
-    return matched.price if matched else None
+        if rule.rule_type == "holiday" and not is_holiday:
+            continue
+        if rule.time_labels and slot.label not in rule.time_labels:
+            continue
+        score = 0
+        if rule.court_ids:
+            score += 3
+        if rule.time_labels:
+            score += 2
+        if rule.rule_type == "holiday":
+            score += 4
+        candidates.append((score, -rule.id, rule))
+    if not candidates:
+        return None
+    candidates.sort(reverse=True)
+    return candidates[0][2].price

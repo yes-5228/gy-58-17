@@ -548,6 +548,75 @@ select {
   font-size: 12px;
 }
 
+.rule-form {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed #d4dfd9;
+  border-radius: 6px;
+  background: #f8faf8;
+}
+
+.rule-form-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rule-form-row input,
+.rule-form-row select {
+  min-height: 36px;
+  padding: 0 8px;
+  font-size: 13px;
+}
+
+.court-picker-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.court-picker-label {
+  color: #475852;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.court-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.court-chip {
+  padding: 4px 10px;
+  border: 1px solid #d4dfd9;
+  border-radius: 999px;
+  background: #fff;
+  color: #475852;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.court-chip.selected {
+  border-color: #0f6f58;
+  background: #0f6f58;
+  color: #fff;
+}
+
+.primary-action.small {
+  min-height: 36px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  justify-self: start;
+}
+
 @media (max-width: 1040px) {
   .main-grid,
   .app-header {

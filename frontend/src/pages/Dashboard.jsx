@@ -8,7 +8,7 @@ import { Header } from '../components/Header.jsx'
 import { PricingRulePanel } from '../components/PricingRulePanel.jsx'
 import { todayISO } from '../utils/date.js'
 
-const EMPTY_RULE = { name: '', rule_type: 'holiday', price: '', time_labels: '' }
+const EMPTY_RULE = { name: '', rule_type: 'holiday', price: '', time_labels: '', court_ids: '' }
 
 export function Dashboard() {
   const [courts, setCourts] = useState([])
@@ -121,8 +121,11 @@ export function Dashboard() {
         name: newRule.name,
         rule_type: newRule.rule_type,
         price: Number(newRule.price),
-        time_labels: newRule.rule_type === 'evening' && newRule.time_labels
-          ? newRule.time_labels.split(',').map((s) => s.trim())
+        time_labels: newRule.time_labels
+          ? newRule.time_labels.split(',').map((s) => s.trim()).filter(Boolean)
+          : [],
+        court_ids: newRule.court_ids
+          ? newRule.court_ids.split(',').map((s) => Number(s.trim())).filter(Boolean)
           : [],
       }
       await api.createPricingRule(payload)
@@ -189,6 +192,7 @@ export function Dashboard() {
           <PricingRulePanel
             rules={pricingRules}
             holidays={holidays}
+            courts={courts}
             newRule={newRule}
             newHoliday={newHoliday}
             onNewRuleChange={setNewRule}

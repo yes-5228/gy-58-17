@@ -85,8 +85,17 @@ class InMemoryStore:
                 court_ids=[],
                 active=True,
             ),
+            3: PricingRule(
+                id=3,
+                name="节假日晚场C1专场",
+                rule_type="holiday",
+                price=180.0,
+                time_labels=["19:00-21:00"],
+                court_ids=[4],
+                active=True,
+            ),
         }
-        self._next_rule_id = 3
+        self._next_rule_id = 4
 
 
 store = InMemoryStore()

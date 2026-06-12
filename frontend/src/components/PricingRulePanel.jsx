@@ -5,6 +5,7 @@ const ruleTypeLabel = { holiday: '节假日', evening: '晚场' }
 export function PricingRulePanel({
   rules,
   holidays,
+  courts,
   newRule,
   newHoliday,
   onNewRuleChange,
@@ -15,6 +16,23 @@ export function PricingRulePanel({
   onAddHoliday,
   onRemoveHoliday,
 }) {
+  const courtsById = courts.reduce((acc, c) => {
+    acc[c.id] = c
+    return acc
+  }, {})
+
+  const selectedCourtIds = newRule.court_ids
+    ? newRule.court_ids.split(',').map((s) => Number(s.trim())).filter(Boolean)
+    : []
+
+  function handleCourtToggle(courtId) {
+    const current = selectedCourtIds
+    const next = current.includes(courtId)
+      ? current.filter((id) => id !== courtId)
+      : [...current, courtId]
+    onNewRuleChange({ ...newRule, court_ids: next.join(',') })
+  }
+
   return (
     <section className="panel pricing-panel">
       <div className="section-title">
@@ -31,11 +49,13 @@ export function PricingRulePanel({
                 <div className="rule-info">
                   <span className="rule-name">{rule.name}</span>
                   <span className="rule-tag">{ruleTypeLabel[rule.rule_type]}</span>
-                  {rule.rule_type === 'evening' && rule.time_labels.length > 0 && (
+                  {rule.time_labels.length > 0 && (
                     <span className="rule-detail">{rule.time_labels.join(', ')}</span>
                   )}
                   {rule.court_ids.length > 0 && (
-                    <span className="rule-detail">限定场地 #{rule.court_ids.join(', ')}</span>
+                    <span className="rule-detail">
+                      限定场地: {rule.court_ids.map((id) => courtsById[id]?.name || `#${id}`).join(', ')}
+                    </span>
                   )}
                 </div>
                 <div className="rule-price">
@@ -57,39 +77,59 @@ export function PricingRulePanel({
             ))}
           </div>
 
-          <form className="inline-form" onSubmit={onAddRule}>
-            <input
-              name="name"
-              placeholder="规则名称"
-              value={newRule.name}
-              onChange={(e) => onNewRuleChange({ ...newRule, name: e.target.value })}
-            />
-            <select
-              value={newRule.rule_type}
-              onChange={(e) => onNewRuleChange({ ...newRule, rule_type: e.target.value })}
-            >
-              <option value="holiday">节假日</option>
-              <option value="evening">晚场</option>
-            </select>
-            <input
-              name="price"
-              type="number"
-              step="1"
-              min="1"
-              placeholder="活动价"
-              value={newRule.price}
-              onChange={(e) => onNewRuleChange({ ...newRule, price: e.target.value })}
-            />
-            {newRule.rule_type === 'evening' && (
+          <form className="rule-form" onSubmit={onAddRule}>
+            <div className="rule-form-row">
+              <input
+                name="name"
+                placeholder="规则名称"
+                value={newRule.name}
+                onChange={(e) => onNewRuleChange({ ...newRule, name: e.target.value })}
+              />
+              <select
+                value={newRule.rule_type}
+                onChange={(e) => onNewRuleChange({ ...newRule, rule_type: e.target.value })}
+              >
+                <option value="holiday">节假日</option>
+                <option value="evening">晚场</option>
+              </select>
+              <input
+                name="price"
+                type="number"
+                step="1"
+                min="1"
+                placeholder="活动价"
+                value={newRule.price}
+                onChange={(e) => onNewRuleChange({ ...newRule, price: e.target.value })}
+              />
+            </div>
+            <div className="rule-form-row">
               <input
                 name="time_labels"
-                placeholder="时段(逗号分隔)"
+                placeholder="适用时段(逗号分隔, 留空=全部时段)"
                 value={newRule.time_labels}
                 onChange={(e) => onNewRuleChange({ ...newRule, time_labels: e.target.value })}
               />
-            )}
-            <button type="submit" className="icon-btn primary">
-              <Plus size={16} />
+            </div>
+            <div className="rule-form-row court-picker-row">
+              <label className="court-picker-label">适用场地:</label>
+              <div className="court-picker">
+                {courts.map((court) => (
+                  <button
+                    type="button"
+                    key={court.id}
+                    className={`court-chip ${selectedCourtIds.includes(court.id) ? 'selected' : ''}`}
+                    onClick={() => handleCourtToggle(court.id)}
+                  >
+                    {court.name}
+                  </button>
+                ))}
+                {selectedCourtIds.length === 0 && (
+                  <span className="muted-text">未选择=全部场地</span>
+                )}
+              </div>
+            </div>
+            <button type="submit" className="primary-action small">
+              <Plus size={14} /> 新增规则
             </button>
           </form>
         </div>
