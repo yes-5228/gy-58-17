@@ -51,6 +51,21 @@ export function Dashboard() {
     setSelectedSlot(null)
   }
 
+  async function refreshPricingAndSlots() {
+    const [ruleData, holidayData, slotData] = await Promise.all([
+      api.getPricingRules(),
+      api.getHolidays(),
+      api.getTimeSlots(selectedDate),
+    ])
+    setPricingRules(ruleData)
+    setHolidays(holidayData)
+    setSlots(slotData)
+    if (selectedSlot) {
+      const updated = slotData.find((s) => s.id === selectedSlot.id) || null
+      setSelectedSlot(updated)
+    }
+  }
+
   useEffect(() => {
     Promise.all([loadBaseData(), loadPricingData()]).catch((error) => setMessage(error.message))
   }, [])
@@ -130,7 +145,7 @@ export function Dashboard() {
       }
       await api.createPricingRule(payload)
       setNewRule({ ...EMPTY_RULE })
-      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+      await refreshPricingAndSlots()
     } catch (error) {
       setMessage(error.message)
     }
@@ -139,7 +154,7 @@ export function Dashboard() {
   async function handleToggleRule(rule) {
     try {
       await api.updatePricingRule(rule.id, { active: !rule.active })
-      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+      await refreshPricingAndSlots()
     } catch (error) {
       setMessage(error.message)
     }
@@ -148,7 +163,7 @@ export function Dashboard() {
   async function handleDeleteRule(ruleId) {
     try {
       await api.deletePricingRule(ruleId)
-      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+      await refreshPricingAndSlots()
     } catch (error) {
       setMessage(error.message)
     }
@@ -160,7 +175,7 @@ export function Dashboard() {
     const delta = direction === 'up' ? 1 : -1
     try {
       await api.updatePricingRule(ruleId, { priority: rule.priority + delta })
-      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+      await refreshPricingAndSlots()
     } catch (error) {
       setMessage(error.message)
     }
@@ -172,7 +187,7 @@ export function Dashboard() {
     try {
       await api.addHoliday(newHoliday)
       setNewHoliday('')
-      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+      await refreshPricingAndSlots()
     } catch (error) {
       setMessage(error.message)
     }
@@ -181,7 +196,7 @@ export function Dashboard() {
   async function handleRemoveHoliday(date) {
     try {
       await api.removeHoliday(date)
-      await Promise.all([loadPricingData(), loadSlots(selectedDate)])
+      await refreshPricingAndSlots()
     } catch (error) {
       setMessage(error.message)
     }
